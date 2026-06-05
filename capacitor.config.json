@@ -1,0 +1,8 @@
+{
+  "appId": "com.bjjlogger.app",
+  "appName": "BJJ Performance Logger",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

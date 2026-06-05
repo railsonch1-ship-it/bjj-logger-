@@ -1,0 +1,6 @@
+{
+  "name": "BJJ Performance Logger",
+  "description": "Sistema de monitoramento e análise avançada de performance para praticantes de Jiu-Jitsu com controle de treinos, táticas de combate e saúde.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
