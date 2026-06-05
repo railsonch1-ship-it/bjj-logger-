@@ -80,6 +80,24 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_ACHIEVEMENTS;
   });
 
+  // Atleta Profile State
+  const [profile, setProfile] = useState(() => {
+    const saved = localStorage.getItem('bjj_profile');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // Fallback below
+      }
+    }
+    return {
+      name: 'Carlos Silva',
+      belt: 'Roxa',
+      weight: '82',
+      startYear: '2021'
+    };
+  });
+
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<string>('dashboard');
 
@@ -148,6 +166,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('bjj_achievements', JSON.stringify(achievements));
   }, [achievements]);
+
+  useEffect(() => {
+    localStorage.setItem('bjj_profile', JSON.stringify(profile));
+  }, [profile]);
 
   // --- DYNAMIC GAMIFICATION SYSTEM CHECKER ---
   useEffect(() => {
@@ -286,6 +308,12 @@ export default function App() {
     setInstructors(INITIAL_INSTRUCTORS);
     setAcademies(INITIAL_ACADEMIES);
     setAchievements(INITIAL_ACHIEVEMENTS);
+    setProfile({
+      name: 'Carlos Silva',
+      belt: 'Roxa',
+      weight: '82',
+      startYear: '2021'
+    });
     setActiveTab('dashboard');
   };
 
@@ -295,12 +323,19 @@ export default function App() {
     gamePlan: GamePlan;
     instructors: Instructor[];
     academies: Academy[];
+    profile?: {
+      name: string;
+      belt: string;
+      weight: string;
+      startYear: string;
+    };
   }) => {
     if (data.logs) setLogs(data.logs);
     if (data.focusTechniques) setFocusTechniques(data.focusTechniques);
     if (data.gamePlan) setGamePlan(data.gamePlan);
     if (data.instructors) setInstructors(data.instructors);
     if (data.academies) setAcademies(data.academies);
+    if (data.profile) setProfile(data.profile);
     setActiveTab('dashboard');
   };
 
@@ -362,15 +397,41 @@ export default function App() {
             })}
           </nav>
 
-          {/* Decor panel matching Carlos' identity / active belt of the competitor */}
+          {/* Decor panel matching competitor's active belt */}
           <div className="hidden lg:flex mt-auto p-3.5 bg-slate-900 border border-slate-850 rounded-xl items-center gap-3 w-full">
             <div className="flex-1 min-w-0">
-              <div className="text-[11px] font-semibold text-slate-100 truncate">Carlos Silva</div>
-              <div className="text-[9px] text-slate-500 font-mono uppercase">Faixa Roxa • Ativo</div>
+              <div className="text-[11px] font-semibold text-slate-100 truncate">{profile.name}</div>
+              <div className="text-[9px] text-slate-500 font-mono uppercase">Faixa {profile.belt} • Ativo</div>
             </div>
-            <div className="w-10 h-3 rounded bg-purple-700 relative overflow-hidden border border-slate-900 shrink-0">
-              <div className="absolute right-0 w-3 h-full bg-slate-950 border-l border-slate-50"></div>
-            </div>
+            {(() => {
+              let beltBg = 'bg-purple-700';
+              let tipBg = 'bg-slate-950';
+              let borderClass = 'border-slate-900';
+
+              if (profile.belt === 'Branca') {
+                beltBg = 'bg-slate-100';
+                tipBg = 'bg-slate-950';
+                borderClass = 'border-slate-350';
+              } else if (profile.belt === 'Azul') {
+                beltBg = 'bg-blue-600';
+                tipBg = 'bg-slate-950';
+              } else if (profile.belt === 'Roxa') {
+                beltBg = 'bg-purple-700';
+                tipBg = 'bg-slate-950';
+              } else if (profile.belt === 'Marrom') {
+                beltBg = 'bg-amber-800';
+                tipBg = 'bg-slate-950';
+              } else if (profile.belt === 'Preta') {
+                beltBg = 'bg-slate-950';
+                tipBg = 'bg-red-650';
+              }
+
+              return (
+                <div className={`w-10 h-3 rounded ${beltBg} relative overflow-hidden border ${borderClass} shrink-0`}>
+                  <div className={`absolute right-0 w-3 h-full ${tipBg} border-l border-slate-50`}></div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Install BJJ Logger Desktop Promo */}
@@ -495,6 +556,8 @@ export default function App() {
                 logs={logs}
                 focusTechniques={focusTechniques}
                 gamePlan={gamePlan}
+                profile={profile}
+                onUpdateProfile={setProfile}
                 onImportBackup={handleImportBackup}
               />
             )}

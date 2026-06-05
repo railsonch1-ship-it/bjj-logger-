@@ -27,12 +27,25 @@ interface SettingsConfigProps {
   logs: TrainingLog[];
   focusTechniques: FocusTechnique[];
   gamePlan: GamePlan;
+  profile: {
+    name: string;
+    belt: string;
+    weight: string;
+    startYear: string;
+  };
+  onUpdateProfile: (newProfile: { name: string; belt: string; weight: string; startYear: string }) => void;
   onImportBackup: (data: {
     logs: TrainingLog[];
     focusTechniques: FocusTechnique[];
     gamePlan: GamePlan;
     instructors: Instructor[];
     academies: Academy[];
+    profile?: {
+      name: string;
+      belt: string;
+      weight: string;
+      startYear: string;
+    };
   }) => void;
 }
 
@@ -47,6 +60,8 @@ export default function SettingsConfig({
   logs,
   focusTechniques,
   gamePlan,
+  profile,
+  onUpdateProfile,
   onImportBackup
 }: SettingsConfigProps) {
   // Local temporary inputs
@@ -54,9 +69,27 @@ export default function SettingsConfig({
   const [newAcad, setNewAcad] = useState('');
 
   // User details local State
-  const [userBelt, setUserBelt] = useState('Azul');
-  const [userWeight, setUserWeight] = useState('82');
-  const [userStartYear, setUserStartYear] = useState('2021');
+  const [userBelt, setUserBelt] = useState(profile.belt);
+  const [userWeight, setUserWeight] = useState(profile.weight);
+  const [userStartYear, setUserStartYear] = useState(profile.startYear);
+  const [userName, setUserName] = useState(profile.name);
+
+  // Keep local state in sync when profile prop changes
+  React.useEffect(() => {
+    setUserBelt(profile.belt);
+    setUserWeight(profile.weight);
+    setUserStartYear(profile.startYear);
+    setUserName(profile.name);
+  }, [profile]);
+
+  const handleUpdateField = (field: string, value: string) => {
+    onUpdateProfile({
+      name: field === 'name' ? value : userName,
+      belt: field === 'belt' ? value : userBelt,
+      weight: field === 'weight' ? value : userWeight,
+      startYear: field === 'startYear' ? value : userStartYear
+    });
+  };
 
   const handleAddInstructorLocal = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +146,7 @@ export default function SettingsConfig({
   const downloadMarkdownBackup = () => {
     let md = `# RELATÓRIO DO ECOSSISTEMA JIU-JITSU PERFORMANCE LOGGER
 Gerado em: ${new Date().toLocaleString('pt-BR')}
-Atleta Cadastrado: Ana Luisa Correia
+Atleta Cadastrado: ${userName}
 Faixa: ${userBelt} | Peso: ${userWeight} kg | Ano de Início: ${userStartYear}
 
 ---
@@ -257,7 +290,13 @@ Total de alvos de focos cadastrados: ${focusTechniques.length}
       focusTechniques,
       gamePlan,
       instructors,
-      academies
+      academies,
+      profile: {
+        name: userName,
+        belt: userBelt,
+        weight: userWeight,
+        startYear: userStartYear
+      }
     });
 
     md += `\n\n<!-- BJJ_STATE_BACKUP_JSON\n${jsonPayload}\n-->\n\n`;
@@ -300,10 +339,26 @@ Total de alvos de focos cadastrados: ${focusTechniques.length}
 
           <div className="space-y-4 text-xs font-sans">
             <div className="space-y-1.5">
+              <label className="text-slate-400 font-mono block">Nome do Atleta:</label>
+              <input 
+                type="text"
+                value={userName}
+                onChange={(e) => {
+                  setUserName(e.target.value);
+                  handleUpdateField('name', e.target.value);
+                }}
+                className="w-full bg-slate-900 text-slate-200 border border-slate-850 p-2.5 rounded-lg focus:outline-none focus:border-purple-500 font-sans"
+              />
+            </div>
+
+            <div className="space-y-1.5">
               <label className="text-slate-400 font-mono block">Graduação Atual / Faixa:</label>
               <select 
                 value={userBelt} 
-                onChange={(e) => setUserBelt(e.target.value)}
+                onChange={(e) => {
+                  setUserBelt(e.target.value);
+                  handleUpdateField('belt', e.target.value);
+                }}
                 className="w-full bg-slate-900 text-slate-200 border border-slate-850 p-2.5 rounded-lg focus:outline-none"
               >
                 <option value="Branca">⚪ Faixa Branca</option>
@@ -319,7 +374,10 @@ Total de alvos de focos cadastrados: ${focusTechniques.length}
               <input 
                 type="number"
                 value={userWeight}
-                onChange={(e) => setUserWeight(e.target.value)}
+                onChange={(e) => {
+                  setUserWeight(e.target.value);
+                  handleUpdateField('weight', e.target.value);
+                }}
                 className="w-full bg-slate-900 text-slate-200 border border-slate-850 p-2.5 rounded-lg focus:outline-none focus:border-purple-500 font-mono"
               />
             </div>
@@ -329,7 +387,10 @@ Total de alvos de focos cadastrados: ${focusTechniques.length}
               <input 
                 type="number"
                 value={userStartYear}
-                onChange={(e) => setUserStartYear(e.target.value)}
+                onChange={(e) => {
+                  setUserStartYear(e.target.value);
+                  handleUpdateField('startYear', e.target.value);
+                }}
                 className="w-full bg-slate-900 text-slate-200 border border-slate-850 p-2.5 rounded-lg focus:outline-none focus:border-purple-500 font-mono"
               />
             </div>
